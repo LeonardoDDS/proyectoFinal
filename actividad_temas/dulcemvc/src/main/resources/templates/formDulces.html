@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Document</title>
+    <!-- CREAR BOOTSTRAP-->
+</head>
+<body>
+
+<p class="text-success" th:if="${param.exito}"> Dulce dado de Alta Exitosamente</p>
+<hr>
+<form th:action="@{/tienda/guardar}" th:object="${dulce}" th:method="post">
+
+    <label> Nombre Dulce: </label> <input type="text"
+                                   name="nombre" id="nombre" th:field="*{nombre}" />
+    <label> Clasificacion: </label> <input type="text"
+                                   name="clasificacion" id="clasificacion" th:field="*{clasificacion}" />
+    <label> Caducidad: </label> <input type="text"
+                                   name="caducidad" id="caducidad" th:field="*{caducidad}" />
+    <label> Descripcion: </label> <input type="text"
+                                   name="descripcion" id="descripcion" th:field="*{descripcion}" />
+    <label> URL Imagen: </label> <input type="text"
+                                   name="imagen" id="imagen" th:field="*{imagen}" />
+    <button type="submit">Enviar</button>
+</form>
+
+</body>
+</html>
