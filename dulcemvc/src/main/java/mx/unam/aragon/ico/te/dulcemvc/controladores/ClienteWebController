@@ -1,0 +1,62 @@
+package mx.unam.aragon.controller.cliente;
+
+import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+import mx.unam.aragon.model.entity.ClienteEntity;
+import mx.unam.aragon.repository.ClienteRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.Optional;
+
+@Controller
+@RequestMapping("/clientes")
+@AllArgsConstructor
+public class ClienteWebController {
+    @Autowired
+    private final ClienteRepository clienteRepository;
+
+    @PostMapping("/registrar")
+    public String registrarCliente(
+            @Valid @ModelAttribute("cliente") ClienteEntity cliente,
+            BindingResult result,
+            RedirectAttributes redirectAttributes) {
+
+        if (result.hasErrors()) {
+            System.out.println("Errores de validación: " + result.getAllErrors());
+            redirectAttributes.addFlashAttribute("mensaje", "Datos inválidos: revisa el formulario.");
+            return "redirect:/formularioPago";
+        }
+
+        if (clienteRepository.existsByCorreoIgnoreCase(cliente.getCorreo())) {
+            redirectAttributes.addFlashAttribute("mensaje", "Ese correo ya está registrado.");
+            return "redirect:/formularioPago";
+        }
+
+        if (clienteRepository.existsByTelefono(cliente.getTelefono())) {
+            redirectAttributes.addFlashAttribute("mensaje", "Ese teléfono ya está registrado.");
+            return "redirect:/formularioPago";
+        }
+
+        clienteRepository.save(cliente);
+        redirectAttributes.addFlashAttribute("mensaje", "Cliente registrado correctamente.");
+        return "redirect:/formularioPago";
+    }
+
+
+
+    @PostMapping("/eliminar")
+    public String eliminarCliente(@RequestParam Long clienteId, RedirectAttributes redirectAttributes) {
+        Optional<ClienteEntity> clienteOpt = clienteRepository.findById(clienteId);
+        if (clienteOpt.isPresent()) {
+            clienteRepository.deleteById(clienteId);
+            redirectAttributes.addFlashAttribute("mensaje", "Cliente eliminado correctamente.");
+        } else {
+            redirectAttributes.addFlashAttribute("mensaje", "No se encontró cliente con ID: " + clienteId);
+        }
+        return "redirect:/formularioPago";
+    }
+}
