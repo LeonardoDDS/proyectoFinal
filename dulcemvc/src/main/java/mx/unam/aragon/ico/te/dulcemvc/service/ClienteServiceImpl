@@ -1,0 +1,43 @@
+package mx.unam.aragon.service.cliente;
+
+import mx.unam.aragon.model.entity.ClienteEntity;
+import mx.unam.aragon.repository.ClienteRepository;
+import mx.unam.aragon.service.cliente.ClienteService;
+import org.springframework.stereotype.Service;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class ClienteServiceImpl implements ClienteService {
+    private final ClienteRepository clienteRepository;
+
+    public ClienteServiceImpl(ClienteRepository clienteRepository) {
+        this.clienteRepository = clienteRepository;
+    }
+
+    @Override
+    public ClienteEntity registrarCliente(ClienteEntity cliente) {
+        return clienteRepository.save(cliente);
+    }
+
+    @Override
+    public List<ClienteEntity> obtenerClientes() {
+        return clienteRepository.findAll();
+    }
+
+    @Override
+    public Optional<ClienteEntity> buscarPorCorreoOTelefono(String contacto) {
+        return clienteRepository.findByTelefonoIgnoreCaseOrCorreoIgnoreCase(contacto, contacto);
+    }
+
+    @Override
+    public boolean correoYaRegistrado(String correo) {
+        return clienteRepository.existsByCorreoIgnoreCase(correo);
+    }
+
+    @Override
+    public boolean telefonoYaRegistrado(String telefono) {
+        return clienteRepository.existsByTelefono(telefono);
+    }
+
+}
