@@ -1,0 +1,101 @@
+package mx.unam.aragon.controller.cliente;
+
+import mx.unam.aragon.model.entity.ClienteEntity;
+import mx.unam.aragon.repository.ClienteRepository;
+import mx.unam.aragon.service.cliente.ClienteService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
+import java.util.Optional;
+
+@Controller
+public class RegistroClienteController {
+    @Autowired
+    private ClienteRepository clienteRepository;
+
+    @GetMapping("/formularioPago")
+    public String mostrarFormulario(Model model) {
+        List<ClienteEntity> clientes = clienteRepository.findAll();
+        model.addAttribute("clientes", clientes);
+        model.addAttribute("cliente", new ClienteEntity());
+        return "productos/formularioPago";
+    }
+
+    @GetMapping("/mostrarFormularioCliente")
+    public String mostrarFormularioConCliente(Model model) {
+        model.addAttribute("clientes", clienteRepository.findAll());
+        model.addAttribute("mostrarFormulario", true);   // Mostrar formulario
+        model.addAttribute("cliente", new ClienteEntity());
+        return "productos/formularioPago";
+    }
+
+    @GetMapping("/clientes/mostrarFormularioModificar")
+    public String mostrarFormularioModificar(Model model) {
+        model.addAttribute("clientes", clienteRepository.findAll()); // sigue mostrando la tabla
+        model.addAttribute("mostrarFormId", true); // muestra el formulario de ID
+        return "productos/formularioPago";
+    }
+
+    @GetMapping("/clientes/modificar")
+    public String mostrarFormularioModificar(@RequestParam(value = "idCliente", required = false) Long id, Model model) {
+        model.addAttribute("clientes", clienteRepository.findAll());
+
+        if (id == null) {
+            model.addAttribute("mostrarFormId", true);
+        } else {
+            Optional<ClienteEntity> clienteOptional = clienteRepository.findById(id);
+            if (clienteOptional.isPresent()) {
+                model.addAttribute("cliente", clienteOptional.get());
+                model.addAttribute("mostrarFormularioEdicion", true);
+            } else {
+                model.addAttribute("error", "Cliente no encontrado con ID: " + id);
+                model.addAttribute("mostrarFormId", true);
+            }
+        }
+
+        return "productos/formularioPago";
+    }
+
+    @GetMapping("/clientes/modificar-form")
+    public String mostrarFormId(Model model) {
+        model.addAttribute("mostrarFormId", true); // Mostrar formulario para ingresar ID
+        return "productos/formularioPago";
+    }
+
+    @GetMapping("/mostrarEliminarCliente")
+    public String mostrarFormularioEliminar(Model model) {
+        model.addAttribute("clientes", clienteRepository.findAll()); // para mostrar tabla si quieres
+        model.addAttribute("mostrarEliminar", true);   // activar el formulario eliminar
+        model.addAttribute("clienteId",Long.valueOf(0));  // para el input del id o puedes usar un DTO
+        return "productos/formularioPago";
+    }
+
+    @PostMapping("/clientes/guardar")
+    public String guardarCliente(@ModelAttribute ClienteEntity cliente) {
+        // Si el cliente ya tiene un ID, lo actualizamos
+        if (cliente.getId() != null) {
+            Optional<ClienteEntity> existente = clienteRepository.findById(cliente.getId());
+            if (existente.isPresent()) {
+                ClienteEntity original = existente.get();
+                original.setNombre(cliente.getNombre());
+                original.setApellido(cliente.getApellido());
+                original.setCorreo(cliente.getCorreo());
+                original.setTelefono(cliente.getTelefono());
+                clienteRepository.save(original);
+            }
+        } else {
+            // Si no tiene ID, es un nuevo cliente
+            clienteRepository.save(cliente);
+        }
+
+        return "redirect:/formularioPago"; // O redirige donde tú quieras
+    }
+
+
+}
